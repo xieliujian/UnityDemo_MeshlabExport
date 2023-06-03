@@ -1,0 +1,17 @@
+
+
+1. 使用的是python3.9
+
+2. pymeshlab是在python3.9下面下载，功能开发的时候不支持最新的python3.10下面命令行下载，提示无法下载。
+（原因是pymeshlab没有提供最新的3.10安装版本，通过github上的PyMeshLab v2021.07可以印证， https://github.com/cnr-isti-vclab/PyMeshLab/releases/tag/v2021.07）
+
+3. pymeshlab, cx_Freeze库安装在python安装目录的Lib/site-packages目录下
+
+4. 打包使用如下命令
+
+[废弃]打出来的散包，本机可以正常使用，其他机器使用就会报错
+cxfreeze -c main.py --packages=numpy --target-dir dist
+
+[正确的打包方式]
+pyinstaller -F main.py --collect-submodules numpy --collect-data pymeshlab
+
