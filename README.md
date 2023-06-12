@@ -82,5 +82,26 @@ using (Process myProcess = new Process())
 
 ```
 
+## pyMeshlab导出的python工具
 
+python导出，使用函数`simplification_quadric_edge_collapse_decimation`
 
+```python
+
+ms.simplification_quadric_edge_collapse_decimation(     
+    targetperc=reducepercent,
+    qualitythr=qualitythr,
+    preserveboundary=preserveboundary,
+    boundaryweight=boundaryweight,
+    preservenormal=preservenormal,
+    preservetopology=preservetopology,
+    optimalplacement=optimalplacement,
+    planarquadric=planarquadric,
+    planarweight=planarweight,
+    qualityweight=qualityweight,
+    autoclean=autoclean
+    )
+
+```
+
+通过`pyinstaller`打包成`exe`
