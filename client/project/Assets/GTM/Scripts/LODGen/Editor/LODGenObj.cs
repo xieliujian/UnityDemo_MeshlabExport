@@ -7,43 +7,63 @@ namespace gtm.Scene.LODGen
 {
     public class LODGenObj
     {
-        public GameObject Obj;
+        /// <summary>
+        /// 
+        /// </summary>
+        public GameObject obj;
 
-        public GameObject SrcObj;
+        /// <summary>
+        /// 
+        /// </summary>
+        public GameObject srcObj;
 
-        public string PrefabName;
+        /// <summary>
+        /// 
+        /// </summary>
+        public string prefabName;
 
-        public List<LODGenSubObj> SubObjList = new List<LODGenSubObj>();
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<LODGenSubObj> subObjList = new List<LODGenSubObj>();
 
         /// <summary>
         /// 新生成的prefab路径
         /// </summary>
-        public string NewPrefabPath;
+        public string newPrefabPath;
 
         /// <summary>
         /// LOD的prefab列表
         /// </summary>
-        public Dictionary<int, List<string>> LODPrefabDict = new Dictionary<int, List<string>>();
+        public Dictionary<int, List<string>> lODPrefabDict = new Dictionary<int, List<string>>();
 
         /// <summary>
         /// LOD的配置
         /// </summary>
-        public LODGenConfig LODCfg;
+        public LODGenConfig lodCfg;
 
-
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="subobj"></param>
         public void AddSubObj(LODGenSubObj subobj)
         {
-            SubObjList.Add(subobj);
+            subObjList.Add(subobj);
         }
 
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="prefabpath"></param>
         public void AddLODPrefabDict(int id, string prefabpath)
         {
-            if (!LODPrefabDict.ContainsKey(id))
+            if (!lODPrefabDict.ContainsKey(id))
             {
-                LODPrefabDict.Add(id, new List<string>());
+                lODPrefabDict.Add(id, new List<string>());
             }
 
-            var pathlist = LODPrefabDict[id];
+            var pathlist = lODPrefabDict[id];
             if (pathlist != null)
             {
                 pathlist.Add(prefabpath);

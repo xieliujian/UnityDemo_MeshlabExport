@@ -137,16 +137,16 @@ namespace gtm.Scene.ModelExport
 
             // 受中歌方
             var strreduceparam = "";
-            strreduceparam += (reduceparam.qualitythr + SEMICOLON_SPLIT_SYMBOL);
-            strreduceparam += (Convert.ToInt32(reduceparam.preserveboundary) + SEMICOLON_SPLIT_SYMBOL);
-            strreduceparam += (reduceparam.boundaryweight + SEMICOLON_SPLIT_SYMBOL);
-            strreduceparam += (Convert.ToInt32(reduceparam.preservenormal) + SEMICOLON_SPLIT_SYMBOL);
-            strreduceparam += (Convert.ToInt32(reduceparam.preservetopology) + SEMICOLON_SPLIT_SYMBOL);
+            strreduceparam += (reduceparam.qualityThr + SEMICOLON_SPLIT_SYMBOL);
+            strreduceparam += (Convert.ToInt32(reduceparam.preserveBoundary) + SEMICOLON_SPLIT_SYMBOL);
+            strreduceparam += (reduceparam.boundaryWeight + SEMICOLON_SPLIT_SYMBOL);
+            strreduceparam += (Convert.ToInt32(reduceparam.preserveNormal) + SEMICOLON_SPLIT_SYMBOL);
+            strreduceparam += (Convert.ToInt32(reduceparam.preserveTopology) + SEMICOLON_SPLIT_SYMBOL);
             strreduceparam += (Convert.ToInt32(reduceparam.optimalplacement) + SEMICOLON_SPLIT_SYMBOL);
-            strreduceparam += (Convert.ToInt32(reduceparam.planarquadric) + SEMICOLON_SPLIT_SYMBOL);
-            strreduceparam += (reduceparam.planarweight + SEMICOLON_SPLIT_SYMBOL);
-            strreduceparam += (Convert.ToInt32(reduceparam.qualityweight) + SEMICOLON_SPLIT_SYMBOL);
-            strreduceparam += Convert.ToInt32(reduceparam.autoclean);
+            strreduceparam += (Convert.ToInt32(reduceparam.planarQuadric) + SEMICOLON_SPLIT_SYMBOL);
+            strreduceparam += (reduceparam.planarWeight + SEMICOLON_SPLIT_SYMBOL);
+            strreduceparam += (Convert.ToInt32(reduceparam.qualityWeight) + SEMICOLON_SPLIT_SYMBOL);
+            strreduceparam += Convert.ToInt32(reduceparam.autoClean);
             strreduceparam = "\"" + strreduceparam + "\"";
 
             // 受中

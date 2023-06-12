@@ -5,16 +5,6 @@ using UnityEngine;
 
 namespace gtm.Scene.LODGen
 {
-    public enum HLODMaterialType
-    {
-        Opacity,        // 不透明
-        AlphaTest,      // AlphaTest
-        BOM,            // Building Opacity_Meshlab,    // 不透明 + Meshlab减面
-        BOMC,           // Building Opacity_Meshlab_Combine,  // 不透明 + Meshlab减面 + 合并材质
-        LODGen_BOM,     // LODGen 的 Building Opacity_Meshlab,    // 不透明 + Meshlab减面
-        Empty,          // 空
-    }
-
     public class LODGenUtil
     {
         public const string PREFAB_SUFFIX = ".prefab";
@@ -84,14 +74,9 @@ namespace gtm.Scene.LODGen
         /// <param name="mattype"></param>
         /// <param name="isusemattypename"></param>
         /// <returns></returns>
-        public static string CombineFileName(string suffix, string savepath, string savefilename, HLODMaterialType mattype, bool isusemattypename)
+        public static string CombineFileName(string suffix, string savepath, string savefilename)
         {
             string filename = savepath + savefilename + suffix;
-            if (isusemattypename)
-            {
-                filename = savepath + savefilename + "_" + mattype.ToString() + suffix;
-            }
-
             return filename;
         }
 
@@ -208,6 +193,11 @@ namespace gtm.Scene.LODGen
             return bounds;
         }
 
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <returns></returns>
         public static float GetObjBoundsMaxSize(GameObject parent)
         {
             Bounds bounds = GetObjBoundsNew(parent);
@@ -251,6 +241,10 @@ namespace gtm.Scene.LODGen
             }
         }
 
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="go"></param>
         public static void RemoveLODGroup(GameObject go)
         {
             if (go == null)

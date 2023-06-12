@@ -31,12 +31,12 @@ namespace gtm.Scene.LODGen
         /// 0 accept any kind of face(no penalties),
         // 0.5 penalize faces with quality < 0.5, proportionally to their shape
         /// </summary>
-        public float qualitythr = 0.3f;
+        public float qualityThr = 0.3f;
 
         /// <summary>
         /// Preserve Boundary of the mesh: The simplification process tries to do not affect mesh boundaries during simplification
         /// </summary>
-        public bool preserveboundary = false;
+        public bool preserveBoundary = false;
 
         /// <summary>
         /// Boundary Preserving Weight: The importance of the boundary during simplification. 
@@ -44,18 +44,18 @@ namespace gtm.Scene.LODGen
         /// Values greater than 1.0 raise boundary importance and has the effect of removing less vertices on the border. 
         /// Admitted range of values (0,+inf).
         /// </summary>
-        public float boundaryweight = 1.0f;
+        public float boundaryWeight = 1.0f;
 
         /// <summary>
         /// Preserve Normal: Try to avoid face flipping effects and try to preserve the original orientation of the surface
         /// </summary>
-        public bool preservenormal = false;
+        public bool preserveNormal = false;
 
         /// <summary>
         /// Preserve Topology: Avoid all the collapses that should cause a topology change in the mesh (like closing holes, squeezing handles, etc). 
         /// If checked the genus of the mesh should stay unchanged.
         /// </summary>
-        public bool preservetopology = false;
+        public bool preserveTopology = false;
 
         /// <summary>
         /// Optimal position of simplified vertices: Each collapsed vertex is placed in the position minimizing the quadric error.
@@ -68,26 +68,26 @@ namespace gtm.Scene.LODGen
         /// Planar Simplification: Add additional simplification constraints that improves the quality of the simplification of the planar portion of the mesh, 
         /// as a side effect, more triangles will be preserved in flat areas (allowing better shaped triangles).
         /// </summary>
-        public bool planarquadric = false;
+        public bool planarQuadric = false;
 
         /// <summary>
         /// Planar Simp. Weight: How much we should try to preserve the triangles in the planar regions. 
         /// If you lower this value planar areas will be simplified more.
         /// </summary>
-        public float planarweight = 0.001f;
+        public float planarWeight = 0.001f;
 
         /// <summary>
         /// Weighted Simplification: Use the Per-Vertex quality as a weighting factor for the simplification. 
         /// The weight is used as a error amplification value, 
         /// so a vertex with a high quality value will not be simplified and a portion of the mesh with low quality values will be aggressively simplified.
         /// </summary>
-        public bool qualityweight = false;
+        public bool qualityWeight = false;
 
         /// <summary>
         /// Post-simplification cleaning: After the simplification an additional set of steps is performed to clean the mesh 
         /// (unreferenced vertices, bad faces, etc)
         /// </summary>
-        public bool autoclean = true;
+        public bool autoClean = true;
     }
 
     [ExecuteAlways]
@@ -110,22 +110,22 @@ namespace gtm.Scene.LODGen
         /// <summary>
         /// 最小可以减少的面数，大于这个面数才会走减面流程
         /// </summary>
-        public int m_minReduceFaceNum = 200;
+        public int minReduceFaceNum = 200;
 
         /// <summary>
         /// 不减面的模型列表
         /// </summary>
-        public List<MeshRenderer> m_unreduceMeshList = new List<MeshRenderer>();
+        public List<MeshRenderer> unReduceMeshList = new List<MeshRenderer>();
 
         /// <summary>
         /// LOD等级列表
         /// </summary>
-        public List<LODGenLevel> m_levelList = new List<LODGenLevel>();
+        public List<LODGenLevel> levelList = new List<LODGenLevel>();
 
         /// <summary>
         /// Meshlab的减面参数
         /// </summary>
-        public MeshlabReduceParam m_meshlabReduceParam = new MeshlabReduceParam();
+        public MeshlabReduceParam meshlabReduceParam = new MeshlabReduceParam();
 
         /// <summary>
         /// 初始化
@@ -135,16 +135,22 @@ namespace gtm.Scene.LODGen
 
         }
 
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="meshface"></param>
+        /// <param name="srcrender"></param>
+        /// <returns></returns>
         public bool CanReduceFace(int meshface, MeshRenderer srcrender)
         {
             // 是否面数满足
-            var isfaceenough = meshface >= m_minReduceFaceNum;
+            var isfaceenough = meshface >= minReduceFaceNum;
 
             // 不是不减面mesh
             bool isreducemodel = true;
             if (srcrender != null)
             {
-                foreach(var render in m_unreduceMeshList)
+                foreach(var render in unReduceMeshList)
                 {
                     if (render == null)
                         continue;
@@ -160,9 +166,13 @@ namespace gtm.Scene.LODGen
             return isfaceenough && isreducemodel;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public bool IsLevelEmpty()
         {
-            return m_levelList.Count <= 0;
+            return levelList.Count <= 0;
         }
     }
 }

@@ -15,20 +15,22 @@ namespace gtm.Scene.LODGen
         /// <summary>
         /// meta后缀
         /// </summary>
-        public const string GMetaSuffix = ".meta";
+        public const string META_SUFFIX = ".meta";
 
         /// <summary>
         /// LOD后缀
         /// </summary>
-        public const string GLODSuffix = "_LOD";
+        public const string LOD_SUFFIX = "_LOD";
 
         /// <summary>
         /// 最小一级的LOD百分比
         /// </summary>
-        private const float GMinLODPercent = 0.01f;
+        private const float MIN_LOD_PERCENT = 0.01f;
 
-        // 预览保存目录
-        public const string GPreviewSaveDir = "Assets/Temp/LODGen/";
+        /// <summary>
+        /// 预览保存目录
+        /// </summary>
+        public const string PREVIEW_SAVE_DIR = "Assets/Temp/LODGen/";
 
         public class LODInfo
         {
@@ -62,28 +64,33 @@ namespace gtm.Scene.LODGen
             /// <summary>
             /// Prefab路径
             /// </summary>
-            public string PrefabPath;
+            public string prefabPath;
 
             /// <summary>
             /// 模型路径
             /// </summary>
-            public string ModelPath;
+            public string modelPath;
 
             /// <summary>
             /// 材质路径
             /// </summary>
-            public string MatPath;
+            public string matPath;
 
             /// <summary>
             /// 贴图路径
             /// </summary>
-            public string TexPath;
+            public string texPath;
 
             /// <summary>
             /// 源prefab路径
             /// </summary>
-            public string SrcPrefabPath;
+            public string srcPrefabPath;
 
+            /// <summary>
+            /// .
+            /// </summary>
+            /// <param name="rootdir"></param>
+            /// <param name="tempdir"></param>
             public void ProcessDir(string rootdir, string tempdir)
             {
                 if (Directory.Exists(tempdir))
@@ -94,19 +101,23 @@ namespace gtm.Scene.LODGen
                 Directory.CreateDirectory(tempdir);
             }
 
+            /// <summary>
+            /// .
+            /// </summary>
+            /// <param name="go"></param>
             public void Refresh(GameObject go)
             {
                 var assetpath = LODGenUtil.GetObjectAssetPath(go);
                 if (assetpath == "")
                 {
-                    assetpath = GPreviewSaveDir;
+                    assetpath = PREVIEW_SAVE_DIR;
                 }
 
-                SrcPrefabPath = assetpath;
+                srcPrefabPath = assetpath;
 
                 assetpath = Path.GetDirectoryName(assetpath);
 
-                PrefabPath = assetpath + "/";
+                prefabPath = assetpath + "/";
 
                 List<string> splitparamlist = new List<string>();
                 splitparamlist.Add("\\");
@@ -120,23 +131,23 @@ namespace gtm.Scene.LODGen
                     newprafabpath += split + "/";
                 }
 
-                ModelPath = newprafabpath + "Model/";
-                MatPath = newprafabpath + "materials/";
-                TexPath = newprafabpath + "textures/";
+                modelPath = newprafabpath + "Model/";
+                matPath = newprafabpath + "materials/";
+                texPath = newprafabpath + "textures/";
 
-                if (!Directory.Exists(ModelPath))
+                if (!Directory.Exists(modelPath))
                 {
-                    Directory.CreateDirectory(ModelPath);
+                    Directory.CreateDirectory(modelPath);
                 }
 
-                if (!Directory.Exists(MatPath))
+                if (!Directory.Exists(matPath))
                 {
-                    Directory.CreateDirectory(MatPath);
+                    Directory.CreateDirectory(matPath);
                 }
 
-                if (!Directory.Exists(TexPath))
+                if (!Directory.Exists(texPath))
                 {
-                    Directory.CreateDirectory(TexPath);
+                    Directory.CreateDirectory(texPath);
                 }
             }
         }
@@ -144,71 +155,12 @@ namespace gtm.Scene.LODGen
         /// <summary>
         /// 目录管理类
         /// </summary>
-        private static GenDirManager m_dirMgr = new GenDirManager();
-
-        public static List<LODInfo> CopyLODInfoList(List<LODInfo> defaultinfolist)
-        {
-            List<LODInfo> newinfolist = new List<LODInfo>();
-
-            var infocount = defaultinfolist.Count;
-            for (int i = 0; i < infocount; i++)
-            {
-                newinfolist.Add(defaultinfolist[i]);
-            }
-
-            return newinfolist;
-        }
-
-        public static List<LODInfo> GetDefaultLODInfoList(LODGenConfig lodcfg)
-        {
-            List<LODInfo> lodinfolist = new List<LODInfo>();
-            if (lodcfg == null)
-            {
-                return lodinfolist;
-            }
-
-            var levellist = lodcfg.m_levelList;
-            for (int i = 0; i < levellist.Count; i++)
-            {
-                LODGenConfig.LODGenLevel level = levellist[i];
-                if (level == null)
-                    continue;
-
-                if (i >= (int)LODGenLevel.LODCombine)
-                    continue;
-
-                LODInfo lodinfo = new LODInfo();
-                lodinfo.level = (LODGenLevel)i;
-                lodinfo.reduce = level.reducePercent;
-                lodinfo.lodpercent = level.lodpercent;
-                lodinfolist.Add(lodinfo);
-            }
-
-            return lodinfolist;
-        }
+        static GenDirManager m_DirMgr = new GenDirManager();
 
         /// <summary>
-        /// 是否LOD配置可以被收集
+        /// 被保存的prefab列表
         /// </summary>
-        /// <param name="lodcfg"></param>
-        /// <returns></returns>
-        private static bool CanLODCfgCollect(LODGenConfig lodcfg)
-        {
-            if (lodcfg.IsLevelEmpty())
-            {
-                UnityEditor.EditorUtility.DisplayDialog("LODGen提示", "没有LOD等级，不能生成，最小1级", "确认");
-                return false;
-            }
-
-            var lodgroup = lodcfg.GetComponentInChildren<LODGroup>();
-            if (lodgroup != null)
-            {
-                UnityEditor.EditorUtility.DisplayDialog("LODGen提示", "不能有LODGroup组件，要删除生成", "确认");
-                return false;
-            }
-
-            return true;
-        }
+        static List<string> m_SavePrefabList = new List<string>();
 
         /// <summary>
         /// 生成单个物件
@@ -236,11 +188,86 @@ namespace gtm.Scene.LODGen
             GenObjLOD(newgo, true, false);
         }
 
+
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="defaultinfolist"></param>
+        /// <returns></returns>
+        static List<LODInfo> CopyLODInfoList(List<LODInfo> defaultinfolist)
+        {
+            List<LODInfo> newinfolist = new List<LODInfo>();
+
+            var infocount = defaultinfolist.Count;
+            for (int i = 0; i < infocount; i++)
+            {
+                newinfolist.Add(defaultinfolist[i]);
+            }
+
+            return newinfolist;
+        }
+
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="lodcfg"></param>
+        /// <returns></returns>
+        static List<LODInfo> GetDefaultLODInfoList(LODGenConfig lodcfg)
+        {
+            List<LODInfo> lodinfolist = new List<LODInfo>();
+            if (lodcfg == null)
+            {
+                return lodinfolist;
+            }
+
+            var levellist = lodcfg.levelList;
+            for (int i = 0; i < levellist.Count; i++)
+            {
+                LODGenConfig.LODGenLevel level = levellist[i];
+                if (level == null)
+                    continue;
+
+                if (i >= (int)LODGenLevel.LODCombine)
+                    continue;
+
+                LODInfo lodinfo = new LODInfo();
+                lodinfo.level = (LODGenLevel)i;
+                lodinfo.reduce = level.reducePercent;
+                lodinfo.lodpercent = level.lodpercent;
+                lodinfolist.Add(lodinfo);
+            }
+
+            return lodinfolist;
+        }
+
+        /// <summary>
+        /// 是否LOD配置可以被收集
+        /// </summary>
+        /// <param name="lodcfg"></param>
+        /// <returns></returns>
+        static bool CanLODCfgCollect(LODGenConfig lodcfg)
+        {
+            if (lodcfg.IsLevelEmpty())
+            {
+                UnityEditor.EditorUtility.DisplayDialog("LODGen提示", "没有LOD等级，不能生成，最小1级", "确认");
+                return false;
+            }
+
+            var lodgroup = lodcfg.GetComponentInChildren<LODGroup>();
+            if (lodgroup != null)
+            {
+                UnityEditor.EditorUtility.DisplayDialog("LODGen提示", "不能有LODGroup组件，要删除生成", "确认");
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// 绑定所有的物件配置成分
         /// </summary>
         /// <param name="golist"></param>
-        private static void BindAllObjConfigCom(List<KeyValuePair<GameObject, GameObject>> golist, bool lod4layergen)
+        static void BindAllObjConfigCom(List<KeyValuePair<GameObject, GameObject>> golist, bool lod4layergen)
         {
             foreach (var gopair in golist)
             {
@@ -254,7 +281,7 @@ namespace gtm.Scene.LODGen
                     lodcfgcom = go.AddComponent<LODGenConfig>();
 
                     // LOD等级
-                    var levellist = lodcfgcom.m_levelList;
+                    var levellist = lodcfgcom.levelList;
                     if (levellist.Count <= 0)
                     {
                         if (lod4layergen)
@@ -301,7 +328,12 @@ namespace gtm.Scene.LODGen
             }
         }
 
-        public static void Generate(List<GameObject> golist, bool deltempdir)
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="golist"></param>
+        /// <param name="deltempdir"></param>
+        static void Generate(List<GameObject> golist, bool deltempdir)
         {
             List<KeyValuePair<GameObject, GameObject>> newgolist = new List<KeyValuePair<GameObject, GameObject>>();
             foreach(var go in golist)
@@ -323,83 +355,24 @@ namespace gtm.Scene.LODGen
         }
 
         /// <summary>
-        /// 生成并替换场景中的obj instance
+        /// .
         /// </summary>
-        /// <param name="rootpath"></param>
-        /// <param name="golist"></param>
+        /// <param name="obj"></param>
         /// <param name="deltempdir"></param>
-        public static void GenAndReplaceObjInstance(string rootpath, List<GameObject> golist, bool deltempdir)
+        /// <param name="scenegen"></param>
+        static void GenObjLOD(LODGenObj obj, bool deltempdir, bool scenegen)
         {
-            rootpath = rootpath + "/";
+            var saveprefablist = m_SavePrefabList;
 
-            List<KeyValuePair<GameObject, GameObject>> newgolist = new List<KeyValuePair<GameObject, GameObject>>();
-            foreach(var go in golist)
-            {
-                if (go == null)
-                    continue;
+            m_DirMgr.Refresh(obj.obj);
 
-                newgolist.Add(new KeyValuePair<GameObject, GameObject>(go, go));
-            }
+            var objprefabname = obj.prefabName;
 
-            // 1. 绑定所有的物件配置成分
-            BindAllObjConfigCom(newgolist, false);
+            var newsavepath = m_DirMgr.prefabPath;
 
-            // 2. 收集物件列表
-            var newobjlist = CollectObjList(newgolist);
+            obj.newPrefabPath = newsavepath + objprefabname + LODGenUtil.PREFAB_SUFFIX;
 
-            // 3. 生成所有物体得LOD
-            GenAllObjLOD(newobjlist, deltempdir, true);
-            ModifyAllSceneObj(newobjlist);
-        }
-
-        /// <summary>
-        /// 修改所有的场景obj
-        /// </summary>
-        /// <param name="objlist"></param>
-        private static void ModifyAllSceneObj(List<LODGenObj> objlist)
-        {
-            foreach (var obj in objlist)
-            {
-                if (obj == null)
-                    continue;
-
-                var srcobj = obj.Obj;
-                if (srcobj == null)
-                    continue;
-
-                var newpbpath = obj.NewPrefabPath;
-                if (string.IsNullOrEmpty(newpbpath))
-                    continue;
-
-                var newpb = AssetDatabase.LoadAssetAtPath<GameObject>(newpbpath);
-                if (newpb == null)
-                    continue;
-
-                var newpbgo = PrefabUtility.InstantiatePrefab(newpb) as GameObject;
-                if (newpbgo == null)
-                    continue;
-
-                newpbgo.name = srcobj.name;
-
-                LODGenUtil.CopyTransform(newpbgo.transform, srcobj.transform);
-
-                GameObject.DestroyImmediate(srcobj);
-            }
-        }
-
-        private static void GenObjLOD(LODGenObj obj, bool deltempdir, bool scenegen)
-        {
-            var saveprefablist = m_saveprefablist;
-
-            m_dirMgr.Refresh(obj.Obj);
-
-            var objprefabname = obj.PrefabName;
-
-            var newsavepath = m_dirMgr.PrefabPath;
-
-            obj.NewPrefabPath = newsavepath + objprefabname + LODGenUtil.PREFAB_SUFFIX;
-
-            var lodcfg = obj.LODCfg;
+            var lodcfg = obj.lodCfg;
             if (lodcfg == null)
                 return;
 
@@ -407,7 +380,7 @@ namespace gtm.Scene.LODGen
             if (defaultlodinfolist.Count <= 0)
                 return;
 
-            float minReduceFaceNum = lodcfg.m_minReduceFaceNum;
+            float minReduceFaceNum = lodcfg.minReduceFaceNum;
 
             var temppath = newsavepath + LODGenUtil.TEMP_DIR_PREFIX + "/";
 
@@ -420,7 +393,7 @@ namespace gtm.Scene.LODGen
                 }
             }
 
-            m_dirMgr.ProcessDir(newsavepath, temppath);
+            m_DirMgr.ProcessDir(newsavepath, temppath);
 
             var lodinfolist = CopyLODInfoList(defaultlodinfolist);
 
@@ -428,22 +401,21 @@ namespace gtm.Scene.LODGen
             Dictionary<string, string> lodprefabdict = new Dictionary<string, string>();
 
             // 1.1 处理每个子Mesh
-            foreach (var subobj in obj.SubObjList)
+            foreach (var subobj in obj.subObjList)
             {
                 if (subobj == null)
                     continue;
 
-                var subobjname = subobj.MeshName;
-                var canreduceface = lodcfg.CanReduceFace(subobj.FaceCount, subobj.Render as MeshRenderer);
+                var subobjname = subobj.meshName;
+                var canreduceface = lodcfg.CanReduceFace(subobj.faceCount, subobj.render as MeshRenderer);
 
                 subobj.SaveAsPrefab(temppath, subobjname);
 
                 // a. Fbx模型导出
                 if (canreduceface)
                 {
-                    FbxExport.ExportLOD(temppath, subobjname, HLODMaterialType.Empty, false, true, "");
+                    FbxExport.ExportLOD(temppath, subobjname, true, "");
                 }
-
 
                 // b. meshlab文件导出
                 foreach (var lodinfo in lodinfolist)
@@ -468,7 +440,7 @@ namespace gtm.Scene.LODGen
                     else
                     {
                         // Meshlab减面操作
-                        meshlabpbpath = MeshlabExport.ExportLOD(temppath, subobjname, lodreduce, subobj.MatNameList, lodsuffix, lodcfg.m_meshlabReduceParam);
+                        meshlabpbpath = MeshlabExport.ExportLOD(temppath, subobjname, lodreduce, subobj.matNameList, lodsuffix, lodcfg.meshlabReduceParam);
                     }
 
                     // 存储数据供自定义模型生成读取
@@ -484,7 +456,7 @@ namespace gtm.Scene.LODGen
             }
 
             // 2. 导出*.lod模型prefab文件
-            ExportLODModelPrefabNew(obj, newsavepath, lodprefabdict, lodinfolist);
+            ExportLODModelPrefab(obj, newsavepath, lodprefabdict, lodinfolist);
 
             // 3. 删除临时目录
             if (deltempdir)
@@ -493,7 +465,7 @@ namespace gtm.Scene.LODGen
 
                 if (Directory.Exists(temppath))
                 {
-                    var rootmetafile = temppath + GMetaSuffix;
+                    var rootmetafile = temppath + META_SUFFIX;
                     if (File.Exists(rootmetafile))
                     {
                         File.Delete(rootmetafile);
@@ -504,17 +476,15 @@ namespace gtm.Scene.LODGen
                 }
             }
 
-            saveprefablist.Add(m_dirMgr.SrcPrefabPath);
+            saveprefablist.Add(m_DirMgr.srcPrefabPath);
         }
 
         /// <summary>
-        /// 被保存的prefab列表
+        /// .
         /// </summary>
-        public static List<string> m_saveprefablist = new List<string>();
-
-        public static void ClearSavePrefbList()
+        static void ClearSavePrefbList()
         {
-            m_saveprefablist.Clear();
+            m_SavePrefabList.Clear();
         }
 
         /// <summary>
@@ -525,7 +495,7 @@ namespace gtm.Scene.LODGen
         /// <param name="defaultlodinfolist"></param>
         /// <param name="deltempdir"></param>
         /// <param name="scenegen">是否场景生成</param>
-        private static void GenAllObjLOD(List<LODGenObj> objlist, bool deltempdir, bool scenegen)
+        static void GenAllObjLOD(List<LODGenObj> objlist, bool deltempdir, bool scenegen)
         {
             foreach (var obj in objlist)
             {
@@ -537,87 +507,22 @@ namespace gtm.Scene.LODGen
         }
 
         /// <summary>
-        /// 重新指定meshlab的prefab的材质和贴图
+        /// .
         /// </summary>
-        private static void ReassignMeshlabPrefabMatAndTex(string meshlabpbpath, string savepath, string savename)
-        {
-            var meshlabpb = AssetDatabase.LoadAssetAtPath<GameObject>(meshlabpbpath);
-            if (meshlabpb == null)
-                return;
-
-            MeshRenderer meshrender = meshlabpb.GetComponentInChildren<MeshRenderer>();
-            if (meshrender == null)
-                return;
-
-            Material mat = meshrender.sharedMaterial;
-            if (mat == null)
-                return;
-
-            Texture2D maintex = mat.mainTexture as Texture2D;
-            if (maintex == null)
-                return;
-
-            // 复制贴图
-            var srctexpath = AssetDatabase.GetAssetPath(maintex);
-            var newtexpathdir = m_dirMgr.TexPath + "/";
-            string newtexfilepath = newtexpathdir + savename + ".png";
-
-            File.Copy(srctexpath, newtexfilepath, true);
-
-            AssetDatabase.Refresh();
-
-            var texImporter = AssetImporter.GetAtPath(newtexfilepath) as TextureImporter;
-            if (texImporter != null)
-            {
-                TextureImporterPlatformSettings platformset = new TextureImporterPlatformSettings();
-
-                // Android
-                platformset.overridden = true;
-                platformset.name = "Android";
-                platformset.maxTextureSize = 256;
-                platformset.format = TextureImporterFormat.ASTC_4x4;
-                texImporter.SetPlatformTextureSettings(platformset);
-
-                platformset.overridden = true;
-                platformset.name = "iPhone";
-                platformset.maxTextureSize = 256;
-                platformset.format = TextureImporterFormat.ASTC_4x4;
-                texImporter.SetPlatformTextureSettings(platformset);
-
-                texImporter.SaveAndReimport();
-            }
-
-            AssetDatabase.Refresh();
-
-            // 复制材质
-            Material newmat = new Material(mat);
-
-            var storedTexture = AssetDatabase.LoadAssetAtPath<Texture>(newtexfilepath);
-            // 这边属性写死的，当shader属性名修改的时候可能出问题
-            newmat.SetTexture("_BaseMap", storedTexture);
-
-            var newmatpathdir = m_dirMgr.MatPath + "/";
-            string newmatfilepath = newmatpathdir + savename + ".mat";
-
-            AssetDatabase.CreateAsset(newmat, newmatfilepath);
-            AssetDatabase.ImportAsset(newmatfilepath);
-
-            newmat = AssetDatabase.LoadAssetAtPath<Material>(newmatfilepath);
-            meshrender.material = newmat;
-
-            AssetDatabase.Refresh();
-        }
-
-        private static string ExportLODPrefabNew(LODGenObj obj, Dictionary<string, string> lodprefabdict, List<LODInfo> lodinfolist)
+        /// <param name="obj"></param>
+        /// <param name="lodprefabdict"></param>
+        /// <param name="lodinfolist"></param>
+        /// <returns></returns>
+        static string ExportLODPrefab(LODGenObj obj, Dictionary<string, string> lodprefabdict, List<LODInfo> lodinfolist)
         {
             if (lodinfolist.Count <= 0)
                 return "";
 
             // 导出prefab数据
-            var objname = obj.PrefabName;
+            var objname = obj.prefabName;
 
-            var prefabpath = m_dirMgr.PrefabPath + objname + LODGenUtil.PREFAB_SUFFIX;
-            var fbxpath = m_dirMgr.ModelPath + objname + GLODSuffix + LODGenUtil.FBX_SUFFIX;
+            var prefabpath = m_DirMgr.prefabPath + objname + LODGenUtil.PREFAB_SUFFIX;
+            var fbxpath = m_DirMgr.modelPath + objname + LOD_SUFFIX + LODGenUtil.FBX_SUFFIX;
 
             GameObject go = new GameObject(objname);
 
@@ -625,7 +530,7 @@ namespace gtm.Scene.LODGen
             List<LOD> lodlist = new List<LOD>();
 
             // 1. 源模型
-            GameObject srcgo = GameObject.Instantiate(obj.Obj);
+            GameObject srcgo = GameObject.Instantiate(obj.obj);
             srcgo.name = objname;
             srcgo.transform.SetParent(go.transform);
             LODGenUtil.ResetTransform(srcgo.transform);
@@ -655,7 +560,7 @@ namespace gtm.Scene.LODGen
 
                 lodreducelist.Add(lodinfo.lodpercent);
             }
-            lodreducelist.Add(GMinLODPercent);
+            lodreducelist.Add(MIN_LOD_PERCENT);
 
             for (int i = 0; i < lodinfolist.Count; i++)
             {
@@ -671,7 +576,7 @@ namespace gtm.Scene.LODGen
                 lodgo.transform.SetParent(go.transform);
                 LODGenUtil.ResetTransform(lodgo.transform);
 
-                var pbpathlist = obj.LODPrefabDict[(int)lodinfo.level];
+                var pbpathlist = obj.lODPrefabDict[(int)lodinfo.level];
                 if (pbpathlist != null)
                 {
                     foreach (var pbpath in pbpathlist)
@@ -778,11 +683,17 @@ namespace gtm.Scene.LODGen
             return prefabpath;
         }
 
-        private static void ExportLODModelNew(LODGenObj obj, Dictionary<string, string> lodprefabdict, List<LODInfo> lodinfolist)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="lodprefabdict"></param>
+        /// <param name="lodinfolist"></param>
+        static void ExportLODModel(LODGenObj obj, Dictionary<string, string> lodprefabdict, List<LODInfo> lodinfolist)
         {
             // 导出prefab
-            var objname = obj.PrefabName;
-            var savepath = m_dirMgr.ModelPath;
+            var objname = obj.prefabName;
+            var savepath = m_DirMgr.modelPath;
 
             string modelpbpath = savepath + objname + LODGenUtil.PREFAB_SUFFIX;
 
@@ -817,7 +728,7 @@ namespace gtm.Scene.LODGen
             GameObject.DestroyImmediate(go);
 
             // 导出fbx
-            var modelfbxpath = FbxExport.ExportLOD(savepath, objname, GLODSuffix);
+            var modelfbxpath = FbxExport.ExportLOD(savepath, objname, LOD_SUFFIX);
 
             ModelImporter modelimport = AssetImporter.GetAtPath(modelfbxpath) as ModelImporter;
             if (modelimport != null)
@@ -847,136 +758,18 @@ namespace gtm.Scene.LODGen
         /// <param name="lodprefabdict"></param>
         /// <param name="lodinfolist"></param>
         /// <returns></returns>
-        private static string ExportLODModelPrefabNew(LODGenObj obj, string savepath, Dictionary<string, string> lodprefabdict, List<LODInfo> lodinfolist)
+        static string ExportLODModelPrefab(LODGenObj obj, string savepath, Dictionary<string, string> lodprefabdict, List<LODInfo> lodinfolist)
         {
-            ExportLODModelNew(obj, lodprefabdict, lodinfolist);
-            return ExportLODPrefabNew(obj, lodprefabdict, lodinfolist);
+            ExportLODModel(obj, lodprefabdict, lodinfolist);
+            return ExportLODPrefab(obj, lodprefabdict, lodinfolist);
         }
-
-#if false
-
-        /// <summary>
-        /// 旧版本prefab导出格式，需要自定义模型数据文件，目前问题是自定义生成的模型文件不能生成正确的二次uv
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="savepath"></param>
-        /// <param name="lodprefabdict"></param>
-        /// <param name="lodinfolist"></param>
-        /// <returns></returns>
-        private static string ExportLODModelPrefab(LODGenObj obj, string savepath, Dictionary<string, string> lodprefabdict, List<LODInfo> lodinfolist)
-        {
-            // 1. 导出模型数据
-            string filename = savepath + obj.PrefabName + "." + LODGenUtil.LOD_MODEL_SUFFIX;
-            HLODData.TextureCompressionData compressionData = HLODUtility.GetTextureCompressionData();
-
-            using (Stream stream = new FileStream(filename, FileMode.Create))
-            {
-                HLODData data = new HLODData();
-                data.CompressionData = compressionData;
-
-                foreach (var iter in lodprefabdict)
-                {
-                    var lodpbname = iter.Key;
-                    var lodpbpath = iter.Value;
-
-                    var lodpb = AssetDatabase.LoadAssetAtPath<GameObject>(lodpbpath);
-
-                    // 名字不需要_Meshlab后缀
-                    lodpb.name = lodpb.name.Replace(LODGenUtil.MESHLAB_SUFFIX_WITHOUT_EXTENSION, "");
-
-                    if (lodpb != null)
-                    {
-                        data.AddFromGameObject(lodpb, false);
-                    }
-                }
-
-                HLODDataSerializer.Write(stream, data);
-            }
-
-            AssetDatabase.ImportAsset(filename, ImportAssetOptions.ForceUpdate);
-            AssetDatabase.Refresh();
-
-            // 2. 导出prefab数据
-            var objname = obj.PrefabName;
-            var prefabpath = savepath + objname + LODGenUtil.PREFAB_SUFFIX;
-            GameObject go = new GameObject(objname);
-
-            LODGroup lodgroup = go.AddComponent<LODGroup>();
-            List<LOD> lodlist = new List<LOD>();
-
-            // 1. 源模型
-            GameObject srcgo = GameObject.Instantiate(obj.Obj);
-            srcgo.name = objname;
-            srcgo.transform.SetParent(go.transform);
-            LODGenUtil.ResetTransform(srcgo.transform);
-
-            LOD srclod = LODGenUtil.GetLOD(srcgo, 0.4f);
-            lodlist.Add(srclod);
-
-            LODGenUtil.RemoveLODGroup(srcgo);
-
-            // 2. lod模型
-            RootData rootData = AssetDatabase.LoadAssetAtPath<RootData>(filename);
-
-            var maxobjsize = LODGenUtil.GetObjBoundsMaxSize(srcgo);
-
-            // 减面数值列表
-            List<float> lodreducelist = new List<float>();
-            lodreducelist.Add(0.1f);
-            lodreducelist.Add(0.01f);
-
-            for (int i = 0; i < lodinfolist.Count; i++)
-            {
-                var lodinfo = lodinfolist[i];
-                if (lodinfo == null)
-                    continue;
-
-                // 防止数组越界
-                if (i > (lodreducelist.Count - 1))
-                    continue;
-
-                var lodlevel = lodinfo.level;
-                var reduce = lodreducelist[i];
-                var lodsuffix = "_" + lodlevel.ToString();
-
-                GameObject lodgo = new GameObject(objname + lodsuffix);
-                lodgo.transform.SetParent(go.transform);
-                LODGenUtil.ResetTransform(lodgo.transform);
-                //lodgo.transform.localPosition = new Vector3(maxobjsize * (i + 1), 0.0f, 0.0f);
-
-                foreach (var keypair in rootData.rootObjects)
-                {
-                    var prefab = keypair.Value;
-                    var prefabname = prefab.name;
-
-                    if (prefabname.Contains(lodsuffix))
-                    {
-                        GameObject lodmeshgo = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
-                        lodmeshgo.transform.SetParent(lodgo.transform, false);
-                    }
-                }
-
-                LOD lodlod = LODGenUtil.GetLOD(lodgo, reduce);
-                lodlist.Add(lodlod);
-            }
-
-            // 设置LODGroup信息
-            lodgroup.SetLODs(lodlist.ToArray());
-
-            PrefabUtility.SaveAsPrefabAsset(go, prefabpath);
-            GameObject.DestroyImmediate(go);
-
-            return prefabpath;
-        }
-
-#endif
 
         /// <summary>
         /// 收集单个物件
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        private static LODGenObj CollectObj(GameObject obj, GameObject srcobj)
+        static LODGenObj CollectObj(GameObject obj, GameObject srcobj)
         {
             var lodcfg = obj.GetComponentInChildren<LODGenConfig>();
             if (lodcfg == null)
@@ -993,16 +786,16 @@ namespace gtm.Scene.LODGen
             var objpbname = LODGenUtil.GetPrefabName(obj.name);
 
             LODGenObj newobj = new LODGenObj();
-            newobj.Obj = obj;
-            newobj.SrcObj = srcobj;
-            newobj.LODCfg = lodcfg;
-            newobj.PrefabName = objpbname;
+            newobj.obj = obj;
+            newobj.srcObj = srcobj;
+            newobj.lodCfg = lodcfg;
+            newobj.prefabName = objpbname;
 
             foreach (var meshrender in renderlist)
             {
                 LODGenSubObj newsubobj = new LODGenSubObj();
-                newsubobj.MeshName = LODGenUtil.GetPrefabName(meshrender.name);
-                newsubobj.Render = meshrender;
+                newsubobj.meshName = LODGenUtil.GetPrefabName(meshrender.name);
+                newsubobj.render = meshrender;
                 newsubobj.CalcMat(meshrender.sharedMaterials);
                 newsubobj.CalcFace();
                 newobj.AddSubObj(newsubobj);
@@ -1011,7 +804,12 @@ namespace gtm.Scene.LODGen
             return newobj;
         }
 
-        private static List<LODGenObj> CollectObjList(List<KeyValuePair<GameObject, GameObject>> golist)
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="golist"></param>
+        /// <returns></returns>
+        static List<LODGenObj> CollectObjList(List<KeyValuePair<GameObject, GameObject>> golist)
         {
             List<LODGenObj> newobjlist = new List<LODGenObj>();
 
@@ -1026,7 +824,7 @@ namespace gtm.Scene.LODGen
                 if (newobj == null)
                     continue;
 
-                if (newobj.SubObjList.Count > 0)
+                if (newobj.subObjList.Count > 0)
                 {
                     newobjlist.Add(newobj);
                 }

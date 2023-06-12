@@ -8,31 +8,53 @@ namespace gtm.Scene.LODGen
 {
     public class LODGenSubObj
     {
-        public string MeshName;
+        /// <summary>
+        /// .
+        /// </summary>
+        public string meshName;
 
-        public List<Material> MatList = new List<Material>();
+        /// <summary>
+        /// .
+        /// </summary>
+        public List<Material> matList = new List<Material>();
 
-        public List<string> MatNameList = new List<string>();
+        /// <summary>
+        /// .
+        /// </summary>
+        public List<string> matNameList = new List<string>();
 
-        public Renderer Render;
+        /// <summary>
+        /// .
+        /// </summary>
+        public Renderer render;
 
-        public int FaceCount;
+        /// <summary>
+        /// .
+        /// </summary>
+        public int faceCount;
 
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="matarray"></param>
         public void CalcMat(Material[] matarray)
         {
-            MatList.AddRange(matarray);
+            matList.AddRange(matarray);
 
-            MatNameList.Clear();
+            matNameList.Clear();
             foreach(var mat in matarray)
             {
                 var path = AssetDatabase.GetAssetPath(mat);
-                MatNameList.Add(path);
+                matNameList.Add(path);
             }
         }
 
+        /// <summary>
+        /// .
+        /// </summary>
         public void CalcFace()
         {
-            MeshFilter meshfilter = Render.GetComponent<MeshFilter>();
+            MeshFilter meshfilter = render.GetComponent<MeshFilter>();
             if (meshfilter == null)
                 return;
 
@@ -40,12 +62,17 @@ namespace gtm.Scene.LODGen
             if (mesh == null)
                 return;
 
-            FaceCount = mesh.triangles.Length;
+            faceCount = mesh.triangles.Length;
         }
 
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="name"></param>
         public void SaveAsPrefab(string path, string name)
         {
-            MeshFilter srcmeshfilter = Render.GetComponent<MeshFilter>();
+            MeshFilter srcmeshfilter = render.GetComponent<MeshFilter>();
             if (srcmeshfilter == null)
                 return;
 
@@ -61,7 +88,7 @@ namespace gtm.Scene.LODGen
             meshfilter.mesh = prefabmesh;
 
             // 2. º”‘ÿ≤ƒ÷ 
-            meshrender.materials = MatList.ToArray();
+            meshrender.materials = matList.ToArray();
 
             var filepath = path + name + LODGenUtil.PREFAB_SUFFIX;
             PrefabUtility.SaveAsPrefabAsset(go, filepath);

@@ -25,7 +25,7 @@ namespace gtm.Scene.ModelExport
         /// <returns></returns>
         public static string ExportLOD(string savepath, string savefilename, string extrasuffix)
         {
-            return ExportLOD(savepath, savefilename, HLODMaterialType.Empty, false, false, extrasuffix);
+            return ExportLOD(savepath, savefilename, false, extrasuffix);
         }
 
         /// <summary>
@@ -38,9 +38,9 @@ namespace gtm.Scene.ModelExport
         /// <param name="usefbxsuffix"></param>
         /// <param name="extrasuffix"></param>
         /// <returns></returns>
-        public static string ExportLOD(string savepath, string savefilename, HLODMaterialType mattype, bool isusemattypename, bool usefbxsuffix, string extrasuffix)
+        public static string ExportLOD(string savepath, string savefilename, bool usefbxsuffix, string extrasuffix)
         {
-            var filename = LODGenUtil.CombineFileName(PREFAB_EXTENSION, savepath, savefilename, mattype, isusemattypename);
+            var filename = LODGenUtil.CombineFileName(PREFAB_EXTENSION, savepath, savefilename);
 
             GameObject obj = AssetDatabase.LoadAssetAtPath(filename, typeof(GameObject)) as GameObject;
             if (obj == null)
