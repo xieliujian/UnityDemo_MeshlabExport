@@ -18,7 +18,7 @@ namespace gtm.Scene.ModelExport
         /// <summary>
         /// MeshlabExportÂ·¾¶
         /// </summary>
-        const string MESHLAB_EXE_PATH = "/tools/meshlabexport/main.exe";
+        const string MESHLAB_EXE_PATH = "/../tools/meshlabexport/dist/main.exe";
 
         /// <summary>
         /// ·ÖºÅ·Ö¸ô·û

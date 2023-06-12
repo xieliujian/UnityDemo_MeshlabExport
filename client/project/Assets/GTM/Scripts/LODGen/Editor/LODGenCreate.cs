@@ -96,55 +96,47 @@ namespace gtm.Scene.LODGen
 
             public void Refresh(GameObject go)
             {
+                var assetpath = LODGenUtil.GetObjectAssetPath(go);
+                if (assetpath == "")
                 {
-                    string asmFile = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\Assembly-CSharp-Editor.dll";
-                    System.Type pbtooltype = Assembly.LoadFrom(asmFile).GetType("LR.Scene.PrefabTool");
-                    var processsectormethod = pbtooltype.GetMethod("GetObjectAssetPath");
-                    var assetpath = processsectormethod.Invoke(null, new object[] { go }) as string;
+                    assetpath = GPreviewSaveDir;
+                }
 
-                    //var assetpath = AssetDatabase.GetAssetPath(go);
-                    //var assetpath = PrefabTool.GetObjectAssetPath(go);
-                    if (assetpath == "")
-                    {
-                        assetpath = GPreviewSaveDir;
-                    }
+                SrcPrefabPath = assetpath;
 
-                    SrcPrefabPath = assetpath;
+                assetpath = Path.GetDirectoryName(assetpath);
 
-                    assetpath = Path.GetDirectoryName(assetpath);
+                PrefabPath = assetpath + "/";
 
-                    PrefabPath = assetpath + "/";
+                List<string> splitparamlist = new List<string>();
+                splitparamlist.Add("\\");
+                splitparamlist.Add("/");
+                var splitarray = assetpath.Split(splitparamlist.ToArray(), StringSplitOptions.None);
 
-                    List<string> splitparamlist = new List<string>();
-                    splitparamlist.Add("\\");
-                    splitparamlist.Add("/");
-                    var splitarray = assetpath.Split(splitparamlist.ToArray(), StringSplitOptions.None);
+                var newprafabpath = "";
+                for (int i = 0; i < (splitarray.Length - 1); i++)
+                {
+                    var split = splitarray[i];
+                    newprafabpath += split + "/";
+                }
 
-                    var newprafabpath = "";
-                    for (int i = 0; i < (splitarray.Length - 1); i++)
-                    {
-                        var split = splitarray[i];
-                        newprafabpath += split + "/";
-                    }
+                ModelPath = newprafabpath + "Model/";
+                MatPath = newprafabpath + "materials/";
+                TexPath = newprafabpath + "textures/";
 
-                    ModelPath = newprafabpath + "Model/";
-                    MatPath = newprafabpath + "materials/";
-                    TexPath = newprafabpath + "textures/";
+                if (!Directory.Exists(ModelPath))
+                {
+                    Directory.CreateDirectory(ModelPath);
+                }
 
-                    if (!Directory.Exists(ModelPath))
-                    {
-                        Directory.CreateDirectory(ModelPath);
-                    }
+                if (!Directory.Exists(MatPath))
+                {
+                    Directory.CreateDirectory(MatPath);
+                }
 
-                    if (!Directory.Exists(MatPath))
-                    {
-                        Directory.CreateDirectory(MatPath);
-                    }
-
-                    if (!Directory.Exists(TexPath))
-                    {
-                        Directory.CreateDirectory(TexPath);
-                    }
+                if (!Directory.Exists(TexPath))
+                {
+                    Directory.CreateDirectory(TexPath);
                 }
             }
         }
