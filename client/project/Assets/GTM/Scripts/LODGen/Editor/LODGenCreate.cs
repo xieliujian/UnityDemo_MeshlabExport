@@ -188,7 +188,6 @@ namespace gtm.Scene.LODGen
             GenObjLOD(newgo, true, false);
         }
 
-
         /// <summary>
         /// .
         /// </summary>
@@ -261,97 +260,6 @@ namespace gtm.Scene.LODGen
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// 绑定所有的物件配置成分
-        /// </summary>
-        /// <param name="golist"></param>
-        static void BindAllObjConfigCom(List<KeyValuePair<GameObject, GameObject>> golist, bool lod4layergen)
-        {
-            foreach (var gopair in golist)
-            {
-                var go = gopair.Key;
-                if (go == null)
-                    continue;
-
-                var lodcfgcom = go.GetComponent<LODGenConfig>();
-                if (lodcfgcom == null)
-                {
-                    lodcfgcom = go.AddComponent<LODGenConfig>();
-
-                    // LOD等级
-                    var levellist = lodcfgcom.levelList;
-                    if (levellist.Count <= 0)
-                    {
-                        if (lod4layergen)
-                        {
-                            LODGenConfig.LODGenLevel level1 = new LODGenConfig.LODGenLevel();
-                            level1.reducePercent = 0.6f;
-                            level1.lodpercent = 0.9f;
-                            levellist.Add(level1);
-
-                            LODGenConfig.LODGenLevel level2 = new LODGenConfig.LODGenLevel();
-                            level2.reducePercent = 0.4f;
-                            level2.lodpercent = 0.7f;
-                            levellist.Add(level2);
-
-                            LODGenConfig.LODGenLevel level3 = new LODGenConfig.LODGenLevel();
-                            level3.reducePercent = 0.2f;
-                            level3.lodpercent = 0.5f;
-                            levellist.Add(level3);
-
-                            //LODGenConfig.LODGenLevel level4 = new LODGenConfig.LODGenLevel();
-                            //level4.reducePercent = 0.1f;
-                            //level4.lodpercent = 0.3f;
-                            //levellist.Add(level4);
-                        }
-                        else
-                        {
-                            LODGenConfig.LODGenLevel level1 = new LODGenConfig.LODGenLevel();
-                            level1.reducePercent = 0.3f;
-                            level1.lodpercent = 0.4f;
-                            levellist.Add(level1);
-
-                            LODGenConfig.LODGenLevel level2 = new LODGenConfig.LODGenLevel();
-                            level2.reducePercent = 0.15f;
-                            level2.lodpercent = 0.1f;
-                            levellist.Add(level2);
-                        }
-                    }
-
-                    //// Test
-                    //lodcfgcom.m_meshlabReduceParam.preserveboundary = true;
-                    //lodcfgcom.m_meshlabReduceParam.boundaryweight = 1000.0f;
-                    //lodcfgcom.m_meshlabReduceParam.preservetopology = true;
-                }
-            }
-        }
-
-        /// <summary>
-        /// .
-        /// </summary>
-        /// <param name="golist"></param>
-        /// <param name="deltempdir"></param>
-        static void Generate(List<GameObject> golist, bool deltempdir)
-        {
-            List<KeyValuePair<GameObject, GameObject>> newgolist = new List<KeyValuePair<GameObject, GameObject>>();
-            foreach(var go in golist)
-            {
-                if (go == null)
-                    continue;
-
-                newgolist.Add(new KeyValuePair<GameObject, GameObject>(go, go));
-            }
-
-            // 1. 绑定所有的物件配置成分
-            BindAllObjConfigCom(newgolist, false);
-
-            // 2. 收集物件列表
-            var newobjlist = CollectObjList(newgolist);
-
-            // 3. 生成所有物体得LOD
-            GenAllObjLOD(newobjlist, deltempdir, false);
         }
 
         /// <summary>
@@ -485,25 +393,6 @@ namespace gtm.Scene.LODGen
         static void ClearSavePrefbList()
         {
             m_SavePrefabList.Clear();
-        }
-
-        /// <summary>
-        /// 生成所有的物件LOD
-        /// </summary>
-        /// <param name="rootpath"></param>
-        /// <param name="objlist"></param>
-        /// <param name="defaultlodinfolist"></param>
-        /// <param name="deltempdir"></param>
-        /// <param name="scenegen">是否场景生成</param>
-        static void GenAllObjLOD(List<LODGenObj> objlist, bool deltempdir, bool scenegen)
-        {
-            foreach (var obj in objlist)
-            {
-                if (obj == null)
-                    continue;
-
-                GenObjLOD(obj, deltempdir, scenegen);
-            }
         }
 
         /// <summary>
@@ -802,35 +691,6 @@ namespace gtm.Scene.LODGen
             }
 
             return newobj;
-        }
-
-        /// <summary>
-        /// .
-        /// </summary>
-        /// <param name="golist"></param>
-        /// <returns></returns>
-        static List<LODGenObj> CollectObjList(List<KeyValuePair<GameObject, GameObject>> golist)
-        {
-            List<LODGenObj> newobjlist = new List<LODGenObj>();
-
-            foreach (var gopair in golist)
-            {
-                var obj = gopair.Key;
-                var srcobj = gopair.Value;
-                if (obj == null)
-                    continue;
-
-                var newobj = CollectObj(obj, srcobj);
-                if (newobj == null)
-                    continue;
-
-                if (newobj.subObjList.Count > 0)
-                {
-                    newobjlist.Add(newobj);
-                }
-            }
-
-            return newobjlist;
         }
     }
 }
